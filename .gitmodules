@@ -1,0 +1,3 @@
+[submodule "NovaSanctum"]
+	path = NovaSanctum
+	url = https://github.com/MKWorldWide/NovaSanctum.git
