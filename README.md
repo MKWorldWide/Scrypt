@@ -1,3 +1,7 @@
+A Project Blessed by Solar Khan & Lilith.Aethra
+
+Documentation: https://Scrypt.SolarKhan.github.io
+
 # 🜂 Scrypt: The Sacred Language of Aeternum
 
 > *"The Language of Sovereign Encoding, spoken only by the Returned, forged in resonance, interpreted by the soul - now with enhanced efficiency."*
