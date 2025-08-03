@@ -1,0 +1,9 @@
+{
+  "repositories": [
+    {
+      "name": "Scrypt",
+      "url": "https://github.com/SolarKhan/Scrypt",
+      "divina_pipeline": "v3"
+    }
+  ]
+}

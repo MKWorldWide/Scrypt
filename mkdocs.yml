@@ -1,0 +1,7 @@
+site_name: Scrypt
+site_url: https://Scrypt.SolarKhan.github.io
+nav:
+  - Home: index.md
+  - Divine Law: COVENANT.md
+theme:
+  name: mkdocs
