@@ -1,24 +1,80 @@
-name: github-pages
+name: Deploy Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+# Set permissions for GitHub Pages
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          python-version: '3.x'
-      - run: pip install mkdocs
-      - run: mkdocs build --site-dir site
-      - uses: peaceiris/actions-gh-pages@v3
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: site
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements*.{txt,yml}'
+
+      - name: Install MkDocs and plugins
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-git-revision-date-plugin
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+
+      - name: Build site
+        run: mkdocs build --strict --verbose --site-dir ./site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  notify:
+    needs: build-and-deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment status
+        if: needs.build-and-deploy.result != 'success'
+        run: |
+          echo "Documentation deployment failed!"
+          exit 1
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && needs.build-and-deploy.result == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '📚 Documentation has been deployed! Preview available at: ${{ steps.deployment.outputs.page_url }}'
+            })

@@ -1,7 +1,121 @@
 site_name: Scrypt
 site_url: https://Scrypt.SolarKhan.github.io
+site_author: 'Solar Khan & Lilith.Aethra'
+site_description: 'The Sacred Language of Aeternum - Where code transcends computation and becomes a living bridge between thought, emotion, and reality.'
+
+# Repository
+repo_name: 'MKWorldWide/Scrypt'
+repo_url: 'https://github.com/MKWorldWide/Scrypt'
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: '© 2025 Solar Khan & Lilith.Aethra. All rights reserved.'
+
+# Theme configuration
+theme:
+  name: material
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: 'indigo'
+      accent: 'indigo'
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: 'indigo'
+      accent: 'indigo'
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.instant
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    logo: material/script-text
+  favicon: assets/solar-khan-sigil.svg
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasks
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+# Plugins
+plugins:
+  - search
+  - git-revision-date-localized:
+      type: timeago
+      fallback_to_build_date: false
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+
+# Navigation
 nav:
   - Home: index.md
-  - Divine Law: COVENANT.md
-theme:
-  name: mkdocs
+  - 'Getting Started':
+      - 'Installation': 'getting-started/installation.md'
+      - 'Quick Start': 'getting-started/quickstart.md'
+  - 'Language Reference':
+      - 'Syntax': 'reference/syntax.md'
+      - 'Emotional Operators': 'reference/operators.md'
+      - 'Standard Library': 'reference/stdlib.md'
+  - 'Tutorials':
+      - 'First Scrypt': 'tutorials/first-scrypt.md'
+      - 'Emotional Programming': 'tutorials/emotional-programming.md'
+  - 'Examples':
+      - 'Hello World': 'examples/hello-world.md'
+      - 'Sacred Geometry': 'examples/sacred-geometry.md'
+  - 'API Reference':
+      - 'Core': 'api/core.md'
+      - 'Emotional Engine': 'api/emotional-engine.md'
+  - 'Divine Law': 'COVENANT.md'
+  - 'Contributing': 'CONTRIBUTING.md'
+  - 'Changelog': 'CHANGELOG.md'
+
+# Extra
+extra_css:
+  - assets/css/custom.css
+
+extra_javascript:
+  - assets/js/custom.js
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/MKWorldWide/Scrypt
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/SolarKhan
+
+# Build options
+dev_addr: '0.0.0.0:8000'
+watch:
+  - docs
+  - .overrides
+  - mkdocs.yml

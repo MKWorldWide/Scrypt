@@ -5,44 +5,100 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Set default permissions
+permissions:
+  contents: read
+  packages: read
 
 jobs:
-  build-and-test:
+  lint-and-test:
+    name: Lint and Test
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11']
+        node-version: ['20.x']
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r AthenaMyst_Host/requirements.txt || true
-      - name: Install Node dependencies
-        run: |
-          if [ -f package.json ]; then npm install; fi
-      - name: Lint Python
-        run: |
-          pip install flake8
-          flake8 . || true
-      - name: Lint Node
-        run: |
-          if [ -f package.json ]; then npx eslint . || true; fi
-      - name: Run Python tests
-        run: |
-          python -m pytest AthenaMyst_Host/tests --maxfail=10 --disable-warnings -v || true
-      - name: Run Node tests
-        run: |
-          if [ -f package.json ]; then npm test || true; fi
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: htmlcov/
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: |
+          AthenaMyst_Host/requirements.txt
+          **/setup.py
+          **/pyproject.toml
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      if: fileExists('package.json')
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f "AthenaMyst_Host/requirements.txt" ]; then
+          pip install -r AthenaMyst_Host/requirements.txt
+        fi
+
+    - name: Install Node.js dependencies
+      if: fileExists('package.json')
+      run: npm ci --prefer-offline
+
+    - name: Lint Python
+      run: |
+        pip install flake8
+        flake8 . --count --show-source --statistics
+
+    - name: Lint Node.js
+      if: fileExists('package.json')
+      run: npx eslint . --max-warnings=0
+
+    - name: Run Python tests with coverage
+      run: |
+        pip install pytest-cov
+        python -m pytest AthenaMyst_Host/tests \
+          --cov=AthenaMyst_Host \
+          --cov-report=xml:coverage.xml \
+          --cov-report=html \
+          --maxfail=10 \
+          -v
+
+    - name: Run Node.js tests
+      if: fileExists('package.json')
+      run: npm test
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: coverage.xml
+        fail_ci_if_error: false
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          test-results/**/*
+          coverage/**/*
+          htmlcov/**/*
+        retention-days: 7
